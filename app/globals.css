@@ -1,26 +1,250 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  --color-aegean: #013f7d;
+  --color-aegean-deep: #012d5c;
+  --color-aegean-ink: #0b2a55;
+  --color-gold: #d2a557;
+  --color-gold-deep: #b98a3e;
+  --color-gold-soft: #ecd3a2;
+  --color-cream: #f7f4ed;
+  --color-cream-deep: #efe8db;
+  --color-marble: #fbf9f5;
+  --color-ink: #1d2733;
+  --color-muted: #7a8494;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --animate-bob: bob 6s ease-in-out infinite alternate;
+  --animate-sway: sway 9s ease-in-out infinite alternate;
+  --animate-float: float 7s ease-in-out infinite alternate;
+
+  @keyframes float {
+    from { transform: translate3d(0, -7px, 0); }
+    to { transform: translate3d(0, 7px, 0); }
+  }
+  @keyframes bob {
+    from { transform: translate3d(0, -6px, 0) rotate(-3deg); }
+    to { transform: translate3d(0, 8px, 0) rotate(4deg); }
+  }
+  @keyframes sway {
+    from { transform: rotate(-1.6deg) translate3d(-4px, 0, 0); }
+    to { transform: rotate(1.8deg) translate3d(6px, 4px, 0); }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@theme inline {
+  --font-serif: var(--font-display), "Times New Roman", serif;
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  :root {
+    /* Left/right edge of .shell content, usable by full-bleed layouts. */
+    --gutter: calc(max(0px, (100vw - 1360px) / 2) + clamp(20px, 5.5vw, 84px));
+  }
+
+  html {
+    background: var(--color-cream);
+    color: var(--color-aegean-ink);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--color-cream);
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background: var(--color-aegean);
+    color: var(--color-cream);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 3px;
+  }
+
+  img {
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+}
+
+@layer components {
+  .shell {
+    width: 100%;
+    max-width: 1360px;
+    margin-inline: auto;
+    padding-inline: clamp(20px, 5.5vw, 84px);
+  }
+  @media (min-width: 1024px) {
+    /* Pages wider than the shell keep content aligned with full-bleed sections. */
+    .shell {
+      max-width: none;
+      padding-inline: var(--gutter);
+    }
+  }
+
+  .eyebrow {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+  }
+
+  .display {
+    font-family: var(--font-serif);
+    font-weight: 450;
+    text-transform: uppercase;
+    line-height: 0.92;
+    letter-spacing: -0.012em;
+  }
+
+  /* A line of text that rises from behind its own mask. */
+  .line-mask {
+    display: block;
+    overflow: hidden;
+    padding-block: 0.06em;
+    margin-block: -0.06em;
+  }
+  .line-inner {
+    display: block;
+    will-change: transform;
+  }
+
+  /* Gold headline that catches the light once after it lands. */
+  .shine {
+    background-image: linear-gradient(
+      100deg,
+      var(--color-gold) 0%,
+      var(--color-gold) 38%,
+      #f6e2b4 50%,
+      var(--color-gold) 62%,
+      var(--color-gold) 100%
+    );
+    background-size: 260% 100%;
+    background-position: 100% 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .text-outline {
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--color-aegean);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Scroll reveals: hidden only when JS runs and motion is welcome.      */
+/* GSAP owns every transform; CSS just prevents the first-paint flash. */
+/* ------------------------------------------------------------------ */
+@media (prefers-reduced-motion: no-preference) {
+  html.js [data-reveal],
+  html.js [data-intro] {
+    visibility: hidden;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Preloader — pure CSS so it can never trap the page.                  */
+/* ------------------------------------------------------------------ */
+.preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: var(--color-aegean);
+  color: var(--color-cream);
+  animation: curtain 0.75s var(--ease-in-out-quart) 0.95s forwards;
+  pointer-events: none;
+}
+.preloader__mark {
+  animation: mark-out 0.6s var(--ease-in-out-quart) 0.92s forwards;
+}
+.preloader__mark [data-stroke] {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: stroke-in 0.85s var(--ease-out-expo) forwards;
+}
+.preloader__mark [data-stroke]:nth-child(2) { animation-delay: 0.05s; }
+.preloader__mark [data-stroke]:nth-child(3) { animation-delay: 0.1s; }
+.preloader__mark [data-stroke]:nth-child(4) { animation-delay: 0.15s; }
+.preloader__mark [data-stroke]:nth-child(n + 5) { animation-delay: 0.22s; }
+.preloader__word span {
+  display: inline-block;
+  transform: translate3d(0, 110%, 0);
+  animation: letter-in 0.8s var(--ease-out-expo) forwards;
+}
+.preloader__word span:nth-child(1) { animation-delay: 0.18s; }
+.preloader__word span:nth-child(2) { animation-delay: 0.23s; }
+.preloader__word span:nth-child(3) { animation-delay: 0.28s; }
+.preloader__word span:nth-child(4) { animation-delay: 0.33s; }
+.preloader__word span:nth-child(5) { animation-delay: 0.38s; }
+.preloader__word span:nth-child(6) { animation-delay: 0.43s; }
+
+@keyframes stroke-in { to { stroke-dashoffset: 0; } }
+@keyframes letter-in { to { transform: translate3d(0, 0, 0); } }
+@keyframes mark-out { to { transform: translate3d(0, -40px, 0); opacity: 0; } }
+@keyframes curtain {
+  0% { clip-path: inset(0 0 0 0 round 0 0 0 0); }
+  99% { clip-path: inset(0 0 100% 0 round 0 0 50% 50%); visibility: visible; }
+  100% { clip-path: inset(0 0 100% 0); visibility: hidden; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .preloader { display: none; }
+}
+html:not(.js) .preloader { display: none; }
+
+/* ------------------------------------------------------------------ */
+/* Flavor showcase                                                      */
+/* ------------------------------------------------------------------ */
+.flavor-giant {
+  font-size: min(calc(94vw / (var(--len) * 0.74)), 34svh);
+}
+
+/* Only the first flavour is on stage until the timeline takes over. */
+[data-copy]:not([data-copy="0"]) [data-fade],
+[data-copy]:not([data-copy="0"]) .line-inner,
+[data-list]:not([data-list="0"]) [data-fade],
+[data-giant]:not([data-giant="0"]) [data-char],
+[data-floater]:not([data-floater="0"]),
+[data-topping],
+[data-diver],
+[data-drop] {
+  visibility: hidden;
+}
+
+/* Idle loops rest while the showcase is off-screen. */
+[data-stage]:not([data-idle]) :is(.animate-bob, .animate-float) {
+  animation-play-state: paused;
+}
+
+.floater {
+  left: var(--mx);
+  top: var(--my);
+  width: calc(var(--s) * 1vmin);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+}
+@media (min-width: 1024px) {
+  .floater {
+    left: var(--x);
+    top: var(--y);
+  }
+}
+
+/* Marquee track never wraps */
+.marquee-track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
 }
